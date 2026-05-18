@@ -1,0 +1,30 @@
+from repository import UserRepository
+from services import RegistrationService, AuthenticationService
+
+def ejecutar_demostracion():
+    # 1. Instanciar la base de datos (Persistencia)
+    repo = UserRepository()
+    
+    # 2. Instanciar los servicios pasándoles el repositorio
+    registro = RegistrationService(repo)
+    auth = AuthenticationService(repo)
+    
+    print("\n" + "="*60)
+    print("DEMOSTRANDO FALLA 1: Secuestro de cuenta por sobrescritura")
+    print("="*60)
+    registro.registrar("usuario1@empresa.com", "ClaveSegura123")
+    print("\n--- Un atacante registra el mismo correo ---")
+    registro.registrar("usuario1@empresa.com", "ClaveHacker999")
+    print("\n--- El atacante inicia sesión exitosamente en la cuenta vulnerada ---")
+    auth.iniciar_sesion("usuario1@empresa.com", ["ClaveHacker999"])
+
+    print("\n" + "="*60)
+    print("DEMOSTRANDO FALLA 2: Exceso de intentos en Login (Off-by-one)")
+    print("="*60)
+    registro.registrar("visitante@gmail.com", "MiSecreto")
+    print("\n--- Intentando iniciar sesión con contraseñas erróneas ---")
+    # Pasamos 5 intentos erróneos para demostrar que el bucle no frena en el 3ro
+    auth.iniciar_sesion("visitante@gmail.com", ["Error1", "Error2", "Error3", "Error4", "Error5"])
+
+if _name_ == "_main_":
+    ejecutar_demostracion()
